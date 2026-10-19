@@ -1,8 +1,10 @@
 // QC: static consistency checks — run with: node tools/check.js
 import { readFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
-const root = new URL('../', import.meta.url).pathname.replace(/^\//, '');
-const p = (f) => root + '/' + f;
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const p = (f) => join(root, f);
 const fail = [];
 const ok = [];
 
