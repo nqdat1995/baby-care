@@ -17,6 +17,9 @@ const $ = (sel) => document.querySelector(sel);
 const els = {
   lastEvent: $('#last-event'),
   statsDate: $('#stats-date'),
+  statsPrev: $('#stats-prev'),
+  statsNext: $('#stats-next'),
+  statsToday: $('#stats-today'),
   statTotal: $('#stat-total'),
   statWet: $('#stat-wet'),
   statDirty: $('#stat-dirty'),
@@ -39,6 +42,7 @@ const state = {
   filter: 'all', // 'all' | 'diaper' | 'feeding'
   editing: null, // { kind: 'diaper'|'feeding', id } | null
   saving: false,
+  selectedDate: dayKey(Date.now()), // stats day being viewed (YYYY-MM-DD)
 };
 
 // ---------- helpers ----------
@@ -89,16 +93,40 @@ function renderLastEvent() {
 }
 
 function renderStats() {
+  const selected = state.selectedDate;
   const today = dayKey(Date.now());
-  const diapers = state.events.filter((e) => e.kind === 'diaper' && dayKey(e.ts) === today);
-  const feedings = state.events.filter((e) => e.kind === 'feeding' && dayKey(e.ts) === today);
+  const diapers = state.events.filter((e) => e.kind === 'diaper' && dayKey(e.ts) === selected);
+  const feedings = state.events.filter((e) => e.kind === 'feeding' && dayKey(e.ts) === selected);
   const s = computeDayStats(diapers, feedings);
-  els.statsDate.textContent = fmtDate.format(new Date());
+
+  // Label: Hôm nay / Hôm qua / weekday+date
+  if (selected === today) {
+    els.statsDate.textContent = 'Hôm nay';
+  } else if (selected === dayKey(Date.now() - 86400000)) {
+    els.statsDate.textContent = 'Hôm qua';
+  } else {
+    const [y, m, d] = selected.split('-').map(Number);
+    els.statsDate.textContent = fmtDate.format(new Date(y, m - 1, d));
+  }
+  els.statsNext.disabled = selected >= today;
+  els.statsToday.hidden = selected === today;
+
   els.statTotal.textContent = s.diapersTotal;
   els.statWet.textContent = s.wet;
   els.statDirty.textContent = s.dirty;
   els.statFeedings.textContent = s.feedingsTotal;
   els.statMl.textContent = s.mlTotal;
+}
+
+/** Shift the viewed stats day by ±1 (clamped to today). */
+function shiftStatsDay(deltaDays) {
+  const [y, m, d] = state.selectedDate.split('-').map(Number);
+  const next = new Date(y, m - 1, d + deltaDays);
+  const nextKey = dayKey(next.getTime());
+  const today = dayKey(Date.now());
+  if (nextKey > today) return;
+  state.selectedDate = nextKey;
+  renderStats();
 }
 
 function renderHistory() {
@@ -422,25 +450,29 @@ async function refresh() {
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('./sw.js').then((reg) => {
+    const showUpdateBar = () => {
+      $('#update-bar').hidden = false;
+      $('#btn-reload').onclick = () => {
+        updateReloading = true;
+        reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+      };
+    };
+    // An update may already be waiting (e.g. tab left open across deploys)
+    if (reg.waiting && navigator.serviceWorker.controller) showUpdateBar();
     reg.addEventListener('updatefound', () => {
       const sw = reg.installing;
       if (!sw) return;
       sw.addEventListener('statechange', () => {
-        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-          const bar = $('#update-bar');
-          bar.hidden = false;
-          $('#btn-reload').onclick = () => {
-            reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-          };
-        }
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar();
       });
     });
   }).catch((err) => console.warn('SW registration failed:', err));
 
-  let refreshed = false;
+  // Reload ONLY when the user asked for it (new SW took over) — never on first install.
+  let updateReloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshed) return;
-    refreshed = true;
+    if (!updateReloading) return;
+    updateReloading = false;
     window.location.reload();
   });
 }
@@ -452,8 +484,19 @@ async function boot() {
   wireFilters();
   wireSettings();
 
+  // Close buttons inside dialogs (attribute data-close)
+  document.querySelectorAll('[data-close]').forEach((btn) => {
+    btn.addEventListener('click', () => btn.closest('dialog')?.close());
+  });
+
   $('#btn-add-diaper').addEventListener('click', () => openDiaperDialog());
   $('#btn-add-feeding').addEventListener('click', () => openFeedingDialog());
+  els.statsPrev.addEventListener('click', () => shiftStatsDay(-1));
+  els.statsNext.addEventListener('click', () => shiftStatsDay(1));
+  els.statsToday.addEventListener('click', () => {
+    state.selectedDate = dayKey(Date.now());
+    renderStats();
+  });
   $('#btn-dismiss-update').addEventListener('click', () => {
     $('#update-bar').hidden = true;
   });

@@ -97,6 +97,40 @@ main {
 .btn-feeding { background: var(--feeding); }
 
 /* Stats */
+.stats-head { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.stats-head h2 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.day-nav-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text);
+}
+.day-nav-btn:disabled { opacity: 0.35; cursor: default; }
+.today-link {
+  display: block;
+  margin: 6px auto 0;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -169,15 +203,17 @@ main {
 .dialog form { padding: 20px; }
 .dialog h2 { margin: 0 0 14px; font-size: 1.1rem; }
 .dialog label { display: block; font-size: 0.85rem; font-weight: 600; margin: 12px 0 4px; }
-.dialog input[type="text"],
-.dialog input[type="number"],
-.dialog input[type="datetime-local"],
-.dialog input[type="date"] {
+.dialog input {
   width: 100%;
-  padding: 10px 12px;
+  box-sizing: border-box;
+  height: 44px;
+  min-width: 0;
+  padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 1rem;
+  font-family: inherit;
+  color: var(--text);
 }
 .dialog fieldset {
   border: 1px solid var(--border);
@@ -236,6 +272,11 @@ main {
   text-align: center;
 }
 .toast.error { background: var(--danger); }
+
+/* [hidden] must beat the display:flex/ block rules above (author styles beat UA's [hidden]) */
+.update-bar[hidden],
+.toast[hidden],
+.today-link[hidden] { display: none; }
 
 /* Update bar */
 .update-bar {

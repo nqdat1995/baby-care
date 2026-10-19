@@ -1,7 +1,7 @@
 // Service worker: precache app shell, cache-first for static assets,
 // versioned cache with controlled update flow (no HTML-new/JS-old mismatch).
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `baby-care-${VERSION}`;
 
 const APP_SHELL = [
@@ -18,9 +18,9 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
-  );
+  // No skipWaiting here: the new SW waits, the app shows an update bar,
+  // and the user decides when to reload (SKIP_WAITING message).
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
 });
 
 self.addEventListener('activate', (event) => {

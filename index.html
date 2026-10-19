@@ -34,8 +34,13 @@
       <button id="btn-add-feeding" type="button" class="btn btn-feeding">🍼<span>Ghi cữ bú</span></button>
     </div>
 
-    <section class="card stats" aria-label="Thống kê hôm nay">
-      <h2 id="stats-date">Hôm nay</h2>
+    <section class="card stats" aria-label="Thống kê theo ngày">
+      <div class="stats-head">
+        <button type="button" id="stats-prev" class="day-nav-btn" aria-label="Xem ngày trước">‹</button>
+        <h2 id="stats-date">Hôm nay</h2>
+        <button type="button" id="stats-next" class="day-nav-btn" aria-label="Xem ngày sau" disabled>›</button>
+      </div>
+      <button type="button" id="stats-today" class="today-link" hidden>Về hôm nay</button>
       <div class="stats-grid">
         <div class="stat"><span class="stat-num" id="stat-total">0</span><span class="stat-label">tã</span></div>
         <div class="stat"><span class="stat-num" id="stat-wet">0</span><span class="stat-label">tã ướt</span></div>
@@ -120,7 +125,9 @@
         </fieldset>
 
         <label for="feeding-ml">Lượng sữa (ml)</label>
-        <input type="number" id="feeding-ml" min="1" max="999" inputmode="numeric" placeholder="VD: 120" required>
+        <!-- NOT required: a hidden required field would block native form submit silently.
+             ml is validated in domain.js (validateFeeding) for bottle type. -->
+        <input type="number" id="feeding-ml" min="1" max="999" inputmode="numeric" placeholder="VD: 120">
         <p class="field-error" data-error-for="ml"></p>
 
         <label for="feeding-duration-bottle">Thời lượng phút (tùy chọn)</label>
