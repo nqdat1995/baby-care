@@ -203,7 +203,8 @@ main {
 .dialog form { padding: 20px; }
 .dialog h2 { margin: 0 0 14px; font-size: 1.1rem; }
 .dialog label { display: block; font-size: 0.85rem; font-weight: 600; margin: 12px 0 4px; }
-.dialog input {
+/* Text-like inputs get uniform sizing. Radios/checkboxes keep native size. */
+.dialog input:not([type="radio"]):not([type="checkbox"]) {
   width: 100%;
   box-sizing: border-box;
   height: 44px;

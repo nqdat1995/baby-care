@@ -48,6 +48,23 @@ try {
   check('BUG2 datetime width == text width', Math.abs(widths.ts - widths.note) <= 2, JSON.stringify(widths));
   await page.screenshot({ path: 'tools/shots/02-diaper-dialog.png' });
 
+  // BUG 6: radios must keep native size (not stretched by input sizing rules)
+  const visibleRadioBoxes = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.dialog input[type=radio]')]
+        .filter((el) => el.offsetParent !== null)
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          return { w: Math.round(r.width), h: Math.round(r.height) };
+        })
+    );
+  let radioBoxes = await visibleRadioBoxes();
+  check(
+    'BUG6 diaper radios keep native size',
+    radioBoxes.length > 0 && radioBoxes.every((b) => b.w <= 24 && b.h <= 24),
+    JSON.stringify(radioBoxes)
+  );
+
   // BUG 1: Đóng button must close the dialog
   await page.click('#diaper-dialog [data-close]');
   await page.waitForTimeout(300);
@@ -57,6 +74,12 @@ try {
   // BUG 3: breast feeding must save and show in history
   await page.click('#btn-add-feeding');
   await page.waitForSelector('#feeding-dialog[open]');
+  radioBoxes = await visibleRadioBoxes();
+  check(
+    'BUG6 feeding radios (Bú mẹ/Bú bình) keep native size',
+    radioBoxes.length > 0 && radioBoxes.every((b) => b.w <= 24 && b.h <= 24),
+    JSON.stringify(radioBoxes)
+  );
   await page.fill('#feeding-duration', '12');
   await page.click('#feeding-form button[type=submit]');
   await page.waitForTimeout(600);
