@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="42" fill="#5b8def"/>
+  <!-- baby bottle -->
+  <g transform="translate(96 100)">
+    <!-- nipple -->
+    <ellipse cx="0" cy="-52" rx="9" ry="12" fill="#ffd9b3"/>
+    <!-- collar -->
+    <rect x="-16" y="-42" width="32" height="10" rx="4" fill="#ffffff"/>
+    <!-- body -->
+    <rect x="-24" y="-32" width="48" height="76" rx="12" fill="#ffffff"/>
+    <!-- milk level -->
+    <rect x="-24" y="6" width="48" height="38" rx="12" fill="#ffe9c9"/>
+    <rect x="-24" y="6" width="48" height="14" fill="#ffe9c9"/>
+    <!-- measure lines -->
+    <line x1="-14" y1="-16" x2="4" y2="-16" stroke="#c7d7f5" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-14" y1="-6" x2="4" y2="-6" stroke="#c7d7f5" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-14" y1="4" x2="4" y2="4" stroke="#c7d7f5" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- diaper accent -->
+  <path d="M58 148 q38 18 76 0 q-6 20 -38 20 q-32 0 -38 -20 z" fill="#ffffff" opacity="0.9"/>
+</svg>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bé Yêu — Tã &amp; Sữa</title>
+  <meta name="description" content="Theo dõi tã và cữ bú của em bé — hoạt động ngoại tuyến">
+  <meta name="theme-color" content="#5b8def">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="update-bar" class="update-bar" hidden>
+    <span>Có phiên bản mới</span>
+    <button id="btn-reload" type="button">Tải lại</button>
+    <button id="btn-dismiss-update" type="button" aria-label="Đóng">✕</button>
+  </div>
+
+  <header class="app-header">
+    <h1 id="baby-name">Em bé</h1>
+    <button id="btn-settings" type="button" class="icon-btn" aria-label="Cài đặt">⚙️</button>
+  </header>
+
+  <main>
+    <section class="card last-event" aria-live="polite">
+      <h2>Gần nhất</h2>
+      <p id="last-event">Chưa có dữ liệu</p>
+    </section>
+
+    <div class="quick-add">
+      <button id="btn-add-diaper" type="button" class="btn btn-diaper">🧷<span>Ghi tã</span></button>
+      <button id="btn-add-feeding" type="button" class="btn btn-feeding">🍼<span>Ghi cữ bú</span></button>
+    </div>
+
+    <section class="card stats" aria-label="Thống kê hôm nay">
+      <h2 id="stats-date">Hôm nay</h2>
+      <div class="stats-grid">
+        <div class="stat"><span class="stat-num" id="stat-total">0</span><span class="stat-label">tã</span></div>
+        <div class="stat"><span class="stat-num" id="stat-wet">0</span><span class="stat-label">tã ướt</span></div>
+        <div class="stat"><span class="stat-num" id="stat-dirty">0</span><span class="stat-label">tã bẩn</span></div>
+        <div class="stat"><span class="stat-num" id="stat-feedings">0</span><span class="stat-label">cữ bú</span></div>
+        <div class="stat"><span class="stat-num" id="stat-ml">0</span><span class="stat-label">ml bình</span></div>
+      </div>
+    </section>
+
+    <section class="history-section">
+      <div id="filter-bar" class="filter-bar" role="group" aria-label="Lọc lịch sử">
+        <button type="button" data-filter="all" class="active" aria-pressed="true">Tất cả</button>
+        <button type="button" data-filter="diaper" aria-pressed="false">Tã</button>
+        <button type="button" data-filter="feeding" aria-pressed="false">Bú</button>
+      </div>
+      <div id="history"></div>
+    </section>
+  </main>
+
+  <p class="storage-note">Dữ liệu chỉ lưu trên thiết bị này — nhớ xuất bản sao lưu định kỳ.</p>
+
+  <!-- Diaper dialog -->
+  <dialog id="diaper-dialog" class="dialog">
+    <form id="diaper-form" method="dialog">
+      <h2 id="diaper-title">Ghi nhận tã</h2>
+
+      <fieldset>
+        <legend>Loại tã</legend>
+        <label><input type="radio" name="diaper-type" value="wet" checked> Ướt</label>
+        <label><input type="radio" name="diaper-type" value="dirty"> Bẩn</label>
+        <label><input type="radio" name="diaper-type" value="both"> Cả hai</label>
+        <p class="field-error" data-error-for="type"></p>
+      </fieldset>
+
+      <label for="diaper-ts">Thời điểm</label>
+      <input type="datetime-local" id="diaper-ts" required>
+      <p class="field-error" data-error-for="ts"></p>
+
+      <label for="diaper-note">Ghi chú (tùy chọn)</label>
+      <input type="text" id="diaper-note" maxlength="200" placeholder="VD: nổi mụn đỏ quanh hông">
+      <p class="field-error" data-error-for="note"></p>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" data-close>Đóng</button>
+        <button type="submit" class="btn-primary">Lưu</button>
+        <button type="button" id="diaper-delete" class="btn-danger" hidden>Xóa</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Feeding dialog -->
+  <dialog id="feeding-dialog" class="dialog">
+    <form id="feeding-form" method="dialog">
+      <h2 id="feeding-title">Ghi nhận cữ bú</h2>
+
+      <fieldset>
+        <legend>Loại bú</legend>
+        <label><input type="radio" name="feeding-type" value="breast" checked> Bú mẹ</label>
+        <label><input type="radio" name="feeding-type" value="bottle"> Bú bình</label>
+        <p class="field-error" data-error-for="type"></p>
+      </fieldset>
+
+      <div id="breast-fields">
+        <fieldset>
+          <legend>Bên bú</legend>
+          <label><input type="radio" name="feeding-side" value="left" checked> Trái</label>
+          <label><input type="radio" name="feeding-side" value="right"> Phải</label>
+          <p class="field-error" data-error-for="side"></p>
+        </fieldset>
+
+        <label for="feeding-duration">Thời lượng phút (tùy chọn)</label>
+        <input type="number" id="feeding-duration" min="1" max="300" inputmode="numeric" placeholder="VD: 15">
+        <p class="field-error" data-error-for="durationMin"></p>
+      </div>
+
+      <div id="bottle-fields" hidden>
+        <fieldset>
+          <legend>Loại sữa</legend>
+          <label><input type="radio" name="milk-type" value="breastmilk" checked> Sữa mẹ vắt</label>
+          <label><input type="radio" name="milk-type" value="formula"> Sữa công thức</label>
+          <p class="field-error" data-error-for="milkType"></p>
+        </fieldset>
+
+        <label for="feeding-ml">Lượng sữa (ml)</label>
+        <input type="number" id="feeding-ml" min="1" max="999" inputmode="numeric" placeholder="VD: 120" required>
+        <p class="field-error" data-error-for="ml"></p>
+
+        <label for="feeding-duration-bottle">Thời lượng phút (tùy chọn)</label>
+        <input type="number" id="feeding-duration-bottle" min="1" max="300" inputmode="numeric" placeholder="VD: 10">
+        <p class="field-error" data-error-for="durationMinBottle"></p>
+      </div>
+
+      <label for="feeding-ts">Thời điểm</label>
+      <input type="datetime-local" id="feeding-ts" required>
+      <p class="field-error" data-error-for="ts"></p>
+
+      <label for="feeding-note">Ghi chú (tùy chọn)</label>
+      <input type="text" id="feeding-note" maxlength="200" placeholder="VD: bé bú ít, bỏ bên phải">
+      <p class="field-error" data-error-for="note"></p>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" data-close>Đóng</button>
+        <button type="submit" class="btn-primary">Lưu</button>
+        <button type="button" id="feeding-delete" class="btn-danger" hidden>Xóa</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Settings dialog -->
+  <dialog id="settings-dialog" class="dialog">
+    <form id="settings-form" method="dialog">
+      <h2>Cài đặt &amp; Dữ liệu</h2>
+
+      <label for="settings-name">Tên bé (tùy chọn)</label>
+      <input type="text" id="settings-name" maxlength="50" placeholder="VD: Bé An">
+
+      <label for="settings-birth">Ngày sinh (tùy chọn)</label>
+      <input type="date" id="settings-birth">
+
+      <hr>
+
+      <p class="hint">Dữ liệu lưu cục bộ trên thiết bị. Nếu xóa dữ liệu trình duyệt hoặc đổi thiết bị, dữ liệu sẽ mất trừ khi có bản sao lưu.</p>
+      <div class="dialog-actions column">
+        <button type="button" id="btn-export" class="btn-secondary">⬇️ Xuất bản sao lưu (JSON)</button>
+        <label class="file-label">⬆️ Nhập bản sao lưu
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
+        </label>
+        <button type="button" id="btn-clear" class="btn-danger">🗑️ Xóa toàn bộ dữ liệu</button>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" data-close>Đóng</button>
+        <button type="submit" class="btn-primary">Lưu</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

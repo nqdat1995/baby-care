@@ -1,0 +1,14 @@
+{
+  "name": "baby-care-pwa",
+  "version": "1.0.0",
+  "description": "PWA theo dõi tã và cữ bú của em bé - offline-first, deploy len GitHub Pages",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "serve": "npx --yes serve ."
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.6"
+  }
+}
